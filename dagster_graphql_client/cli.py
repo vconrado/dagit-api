@@ -1,6 +1,6 @@
 import click
 from datetime import datetime
-from dagit_api import DagitAPI
+from dagster_graphql_client import DagsterGraphQLClient
 import yaml
 import json
 from mergedeep import merge
@@ -19,7 +19,7 @@ def cli(ctx, protocol, host, port, repository_location_name, repository_name):
     Dagit Client
     """
     ctx.obj = {
-        'api': DagitAPI(url=f"{protocol}://{host}:{port}/graphql"),
+        'api': DagsterGraphQLClient(url=f"{protocol}://{host}:{port}/graphql"),
         'params': {
             'protocol': protocol,
             'host': host,
@@ -101,7 +101,7 @@ def runs_list(ctx, pipeline_name, run_ids, statuses):
 @click.argument('run_id', required=True)
 @click.pass_context
 def runs_stop(ctx, run_id):
-    api: DagitAPI = ctx.obj['api']
+    api: DagsterGraphQLClient = ctx.obj['api']
     result = api.TerminateRun(runId=run_id)
     type = safe_gets(result, ['terminateRun', '__typename'])
     if type == 'TerminateRunSuccess':

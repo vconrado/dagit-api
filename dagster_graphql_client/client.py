@@ -1,18 +1,24 @@
 from gql import gql, Client
 from gql.transport.requests import RequestsHTTPTransport
-from typing import List
+from typing import List, Optional, Dict, Any
 import dagit_api.queries as queries
 
 
-class DagitAPI:
-    def __init__(self, url, verify_ssl=False, retries=3):
+# Reference: https://github.com/dagster-io/dagster/blob/master/python_modules/dagster-graphql/dagster_graphql/client/client.py
+class DagsterGraphQLClient:
+    def __init__(
+            self, 
+            url, 
+            verify_ssl:Optional[bool]=False, 
+            retries:Optional[int]=3):
         self.client = Client(transport=RequestsHTTPTransport(url=url, verify=verify_ssl, retries=retries), 
                                 fetch_schema_from_transport=True)
 
-    def _execute(self, query: str, variable_values: dict = None) -> dict:
-        return self.client.execute(gql(query), variable_values=variable_values)
+    def _execute(self, query: str, variables:Optional[Dict[str, Any]] = None) -> dict:
+        return self.client.execute(gql(query), variable_values=variables)
    
     def RepositoriesQuery(self):
+    
         return self._execute(queries.RepositoriesQuery)
     
     def JobsQuery(self, repositoryLocationName: str, repositoryName: str) -> dict:

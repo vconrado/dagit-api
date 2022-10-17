@@ -14,12 +14,12 @@ install_requires = [
 packages = find_packages()
 
 g = {}
-with open(os.path.join('dagit_api', 'version.py'), 'rt') as fp:
+with open(os.path.join('dagster_graphql_client', 'version.py'), 'rt') as fp:
     exec(fp.read(), g)
     version = g['__version__']
 
 setup(
-    name='dagit_api',
+    name='dagster_graphql_client',
     version=version,
     description=__doc__,
     long_description=readme,
@@ -36,7 +36,7 @@ setup(
     classifiers=[],
     entry_points={
         'console_scripts': [
-            'dagit_cli = dagit_api.cli:cli'
+            'dagster_client = dagster_graphql_client.cli:cli'
         ]
     }
 )

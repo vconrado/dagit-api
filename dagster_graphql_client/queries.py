@@ -1,3 +1,5 @@
+# queries copied from dagit 0.14.0 web interface
+
 RepositoriesQuery="""
             query RepositoriesQuery {
                 repositoriesOrError {
