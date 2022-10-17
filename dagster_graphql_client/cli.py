@@ -47,7 +47,7 @@ def instance(ctx):
 @instance.command('health')
 @click.pass_context
 def instance_health(ctx):
-    api: DagitAPI = ctx.obj['api']
+    api: DagsterGraphQLClient = ctx.obj['api']
     print("# id, status")
     for daemon in safe_gets(api.InstanceHealthQuery(), ["instance", "daemonHealth", "allDaemonStatuses"]):
         print(f"{daemon['id']:9}:\t{'' if daemon['healthy'] else 'not'} running")
@@ -62,7 +62,7 @@ def jobs(ctx):
 @jobs.command('list')
 @click.pass_context
 def jobs_list(ctx):
-    api: DagitAPI = ctx.obj['api']
+    api: DagsterGraphQLClient = ctx.obj['api']
     variables: dict = ctx.obj['variables']
     print("# name")
     for job in safe_gets(api.JobsQuery(**variables), ["repositoryOrError", "jobs"]):
@@ -82,7 +82,7 @@ def runs(ctx):
 @click.option('--statuses', required=False, help='statuses', multiple=True, default=[])
 @click.pass_context
 def runs_list(ctx, pipeline_name, run_ids, statuses):
-    api: DagitAPI = ctx.obj['api']
+    api: DagsterGraphQLClient = ctx.obj['api']
     variables = {}
     if pipeline_name:
         variables['pipelineName']=pipeline_name
@@ -117,7 +117,7 @@ def runs_stop(ctx, run_id):
 @click.pass_context
 def runs_preset(ctx, pipeline_name, idx, run_config):
     idx = int(idx)
-    api: DagitAPI = ctx.obj['api']
+    api: DagsterGraphQLClient = ctx.obj['api']
     variables: dict = ctx.obj['variables']
     default_values = api.LaunchpadRootQuery(pipelineName=pipeline_name, 
             repositoryLocationName=variables['repositoryLocationName'],repositoryName=variables['repositoryName'])

@@ -1,7 +1,7 @@
 from gql import gql, Client
 from gql.transport.requests import RequestsHTTPTransport
 from typing import List, Optional, Dict, Any
-import dagit_api.queries as queries
+import dagster_graphql_client.queries as queries
 
 
 # Reference: https://github.com/dagster-io/dagster/blob/master/python_modules/dagster-graphql/dagster_graphql/client/client.py
