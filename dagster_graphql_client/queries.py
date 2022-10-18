@@ -1,6 +1,6 @@
 # queries copied from dagit 0.14.0 web interface
 
-RepositoriesQuery="""
+RepositoriesQuery = """
             query RepositoriesQuery {
                 repositoriesOrError {
                     ... on RepositoryConnection {
@@ -16,8 +16,7 @@ RepositoriesQuery="""
         """
 
 
-    
-JobsQuery="""
+JobsQuery = """
     query JobsQuery(
         $repositoryLocationName: String!
         $repositoryName: String!
@@ -37,7 +36,7 @@ JobsQuery="""
         }
 """
 
-LaunchRunMutation="""
+LaunchRunMutation = """
     mutation LaunchRunMutation(
         $repositoryLocationName: String!
         $repositoryName: String!
@@ -74,7 +73,7 @@ LaunchRunMutation="""
     """
 
 
-TerminateRun="""
+TerminateRun = """
     mutation TerminateRun($runId: String!) {
         terminateRun(runId: $runId){
             __typename
@@ -97,7 +96,7 @@ TerminateRun="""
         }
     """
 
-RunStatus="""
+RunStatus = """
     query RunStatus($runId: ID!) {
     pipelineRunOrError(runId: $runId) {
         __typename
@@ -264,21 +263,23 @@ AssetMaterializationsQuery = """
         }
 """
 
-PermissionsQuery="""query PermissionsQuery {
-  permissions {
-    ...PermissionFragment
-    __typename
+PermissionsQuery = """
+  query PermissionsQuery {
+    permissions {
+      ...PermissionFragment
+      __typename
+    }
   }
-}
 
-fragment PermissionFragment on GraphenePermission {
-  permission
-  value
-  __typename
+  fragment PermissionFragment on GraphenePermission {
+    permission
+    value
+    __typename
 }"""
 
 
-RootWorkspaceQuery="""query RootWorkspaceQuery {
+RootWorkspaceQuery = """
+query RootWorkspaceQuery {
   workspaceOrError {
     __typename
     ... on Workspace {
@@ -394,7 +395,8 @@ fragment RepositoryInfoFragment on Repository {
 }"""
 
 
-JobMetadataQuery="""query JobMetadataQuery($params: PipelineSelector!, $runsFilter: RunsFilter) {
+JobMetadataQuery = """
+query JobMetadataQuery($params: PipelineSelector!, $runsFilter: RunsFilter) {
   pipelineOrError(params: $params) {
     ... on Pipeline {
       id
@@ -489,7 +491,8 @@ fragment RunTimeFragment on Run {
 }"""
 
 
-PipelineExplorerRootQuery="""query PipelineExplorerRootQuery($snapshotPipelineSelector: PipelineSelector, $snapshotId: String, $rootHandleID: String!, $requestScopeHandleID: String) {
+PipelineExplorerRootQuery = """
+query PipelineExplorerRootQuery($snapshotPipelineSelector: PipelineSelector, $snapshotId: String, $rootHandleID: String!, $requestScopeHandleID: String) {
   pipelineSnapshotOrError(
     snapshotId: $snapshotId
     activePipelineSelector: $snapshotPipelineSelector
@@ -809,8 +812,8 @@ fragment GraphExplorerAssetNodeFragment on AssetNode {
 """
 
 
-
-JobOverviewSidebarQuery="""query JobOverviewSidebarQuery($pipelineSelector: PipelineSelector!) {
+JobOverviewSidebarQuery = """
+query JobOverviewSidebarQuery($pipelineSelector: PipelineSelector!) {
   pipelineSnapshotOrError(activePipelineSelector: $pipelineSelector) {
     ... on PipelineSnapshot {
       id
@@ -914,7 +917,8 @@ fragment ConfigTypeSchemaFragment on ConfigType {
 }"""
 
 
-LaunchpadRootQuery="""query LaunchpadRootQuery($pipelineName: String!, $repositoryName: String!, $repositoryLocationName: String!) {
+LaunchpadRootQuery = """
+query LaunchpadRootQuery($pipelineName: String!, $repositoryName: String!, $repositoryLocationName: String!) {
   pipelineOrError(
     params: {pipelineName: $pipelineName, repositoryName: $repositoryName, repositoryLocationName: $repositoryLocationName}
   ) {
@@ -1004,7 +1008,8 @@ fragment ConfigEditorGeneratorPartitionSetsFragment on PartitionSets {
 }"""
 
 
-PipelineExecutionConfigSchemaQuery="""query PipelineExecutionConfigSchemaQuery($selector: PipelineSelector!, $mode: String) {
+PipelineExecutionConfigSchemaQuery = """
+query PipelineExecutionConfigSchemaQuery($selector: PipelineSelector!, $mode: String) {
   runConfigSchemaOrError(selector: $selector, mode: $mode) {
     ...LaunchpadSessionContainerRunConfigSchemaFragment
     __typename
@@ -1072,7 +1077,8 @@ fragment ConfigEditorRunConfigSchemaFragment on RunConfigSchema {
 }"""
 
 
-OpSelectorQuery="""query OpSelectorQuery($selector: PipelineSelector!, $requestScopeHandleID: String) {
+OpSelectorQuery = """
+query OpSelectorQuery($selector: PipelineSelector!, $requestScopeHandleID: String) {
   pipelineOrError(params: $selector) {
     __typename
     ... on Pipeline {
@@ -1264,7 +1270,8 @@ fragment OpNodeDefinitionFragment on ISolidDefinition {
 }"""
 
 
-LaunchPipelineExecution="""mutation LaunchPipelineExecution($executionParams: ExecutionParams!) {
+LaunchPipelineExecution = """
+mutation LaunchPipelineExecution($executionParams: ExecutionParams!) {
   launchPipelineExecution(executionParams: $executionParams) {
     __typename
     ... on LaunchRunSuccess {
@@ -1296,7 +1303,8 @@ LaunchPipelineExecution="""mutation LaunchPipelineExecution($executionParams: Ex
 }"""
 
 
-RunsRootQuery="""query RunsRootQuery($limit: Int, $cursor: String, $filter: RunsFilter!, $queuedFilter: RunsFilter!, $inProgressFilter: RunsFilter!) {
+RunsRootQuery = """
+query RunsRootQuery($limit: Int, $cursor: String, $filter: RunsFilter!, $queuedFilter: RunsFilter!, $inProgressFilter: RunsFilter!) {
   pipelineRunsOrError(limit: $limit, cursor: $cursor, filter: $filter) {
     ... on Runs {
       results {
@@ -1370,7 +1378,8 @@ fragment CountFragment on Runs {
 }"""
 
 
-InstanceSchedulesQuery="""query InstanceSchedulesQuery {
+InstanceSchedulesQuery = """
+query InstanceSchedulesQuery {
   instance {
     ...InstanceHealthFragment
     __typename
@@ -1553,7 +1562,8 @@ fragment TickTagFragment on InstigationTick {
 }"""
 
 
-InstanceSensorsQuery="""query InstanceSensorsQuery {
+InstanceSensorsQuery = """
+query InstanceSensorsQuery {
   instance {
     ...InstanceHealthFragment
     __typename
@@ -1738,7 +1748,8 @@ fragment TickTagFragment on InstigationTick {
 }"""
 
 
-StopSensor="""mutation StopSensor($jobOriginId: String!) {
+StopSensor = """
+mutation StopSensor($jobOriginId: String!) {
   stopSensor(jobOriginId: $jobOriginId) {
     __typename
     ... on StopSensorMutationResult {
@@ -1758,7 +1769,8 @@ StopSensor="""mutation StopSensor($jobOriginId: String!) {
 }"""
 
 
-StartSensor="""mutation StartSensor($sensorSelector: SensorSelector!) {
+StartSensor = """
+mutation StartSensor($sensorSelector: SensorSelector!) {
   startSensor(sensorSelector: $sensorSelector) {
     __typename
     ... on Sensor {
@@ -1779,7 +1791,8 @@ StartSensor="""mutation StartSensor($sensorSelector: SensorSelector!) {
 }"""
 
 
-InstanceHealthQuery="""query InstanceHealthQuery {
+InstanceHealthQuery = """
+query InstanceHealthQuery {
   instance {
     ...InstanceHealthFragment
     __typename
@@ -1825,7 +1838,8 @@ fragment PythonErrorFragment on PythonError {
 }"""
 
 
-InstanceConfigQuery="""query InstanceConfigQuery {
+InstanceConfigQuery = """
+query InstanceConfigQuery {
   version
   instance {
     info
@@ -1834,8 +1848,8 @@ InstanceConfigQuery="""query InstanceConfigQuery {
 }"""
 
 
-
-ReloadRepositoryLocationMutation="""mutation ReloadRepositoryLocationMutation($location: String!) {
+ReloadRepositoryLocationMutation = """
+mutation ReloadRepositoryLocationMutation($location: String!) {
   reloadRepositoryLocation(repositoryLocationName: $location) {
     __typename
     ... on WorkspaceLocationEntry {
@@ -1873,7 +1887,8 @@ fragment PythonErrorFragment on PythonError {
 }"""
 
 
-"""mutation Delete($runId: String!) {
+Delete = """
+mutation Delete($runId: String!) {
   deletePipelineRun(runId: $runId) {
     __typename
     ... on PythonError {

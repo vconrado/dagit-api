@@ -2,7 +2,7 @@ import os
 
 from setuptools import find_packages, setup
 
-readme = open('README.md').read()
+readme = open('README.rst').read()
 
 install_requires = [
                     'click==7.1.2', 
