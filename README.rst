@@ -17,4 +17,7 @@ Installation
 See `INSTALL.rst <./INSTALL.rst>`_.
 
 
+Using
+=====
 
+See `USING.rst <./USING.rst>`_.
