@@ -8,7 +8,11 @@ install_requires = [
                     'click==7.1.2', 
                     'gql==2.0.0',
                     'pyyaml==6.0',
-                    'mergedeep==1.3.4'
+                    'mergedeep==1.3.4',
+                    'dagster==0.14.0',
+                    'protobuf==3.17.2',
+                    'grpcio==1.39.0',
+                    'grpcio-health-checking==1.39.0'
                     ]
 
 packages = find_packages()

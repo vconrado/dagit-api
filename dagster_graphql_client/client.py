@@ -18,146 +18,179 @@ class DagsterGraphQLClient:
     def _execute(self, query: str, variables: Optional[Dict[str, Any]] = None) -> dict:
         return self.client.execute(gql(query), variable_values=variables)
 
-    def RepositoriesQuery(self):
+    def repositories(self):
         return self._execute(queries.RepositoriesQuery)
 
-    def JobsQuery(self, repositoryLocationName: str, repositoryName: str) -> dict:
+    def jobs(self, repository_location_name: str, repository_name: str) -> dict:
         variables = {
-            "repositoryLocationName": repositoryLocationName,
-            "repositoryName": repositoryName,
+            "repositoryLocationName": repository_location_name,
+            "repositoryName": repository_name,
         }
         return self._execute(queries.JobsQuery, variables)
 
-    def LaunchRunMutation(
-        self,
-        repositoryLocationName: str,
-        repositoryName: str,
-        jobName: str,
-        runConfigData: dict,
+    def job_metadata(
+        self, repository_location_name: str, repository_name: str, pipeline_name: str
     ) -> dict:
         variables = {
-            "repositoryLocationName": repositoryLocationName,
-            "repositoryName": repositoryName,
-            "jobName": jobName,
-            "runConfigData": runConfigData,
+            "pipelineName": pipeline_name,
+            "repositoryName": repository_name,
+            "repositoryLocationName": repository_location_name,
+        }
+        return self._execute(queries.JobMetadataQuery, variables)
+
+    def job_overview_sidebar(
+        self, repository_location_name: str, repository_name: str, pipeline_name: str
+    ) -> dict:
+        variables = {
+            "pipelineSelector": {
+                "repositoryName": repository_name,
+                "repositoryLocationName": repository_location_name,
+                "pipelineName": pipeline_name,
+            }
+        }
+        return self._execute(queries.JobOverviewSidebarQuery, variables)
+
+    def run_launch(
+        self,
+        repository_location_name: str,
+        repository_name: str,
+        job_name: str,
+        run_config_data: dict,
+    ) -> dict:
+        variables = {
+            "repositoryLocationName": repository_location_name,
+            "repositoryName": repository_name,
+            "jobName": job_name,
+            "runConfigData": run_config_data,
         }
         return self._execute(queries.LaunchRunMutation, variables)
 
-    def TerminateRun(self, runId: str) -> dict:
-        variables = {"runId": runId}
+    def run_terminate(self, run_id: str) -> dict:
+        variables = {"runId": run_id}
         return self._execute(queries.TerminateRun, variables)
 
-    def RunStatus(self, runId) -> dict:
-        variables = {"runId": runId}
+    def run_status(self, run_id) -> dict:
+        variables = {"runId": run_id}
         return self._execute(queries.RunStatus, variables)
 
-    def AssetWipeMutation(self, assetKeys: str) -> dict:
+    def run_delete(self, run_id: str) -> dict:
+        variables = {"runId": run_id}
+        return self._execute(queries.Delete, variables)
+
+    def runs_root(
+        self,
+        pipeline_name: Optional[str] = None,
+        run_ids: List[str] = [],
+        statuses: List[str] = [],
+        limit=20,
+    ) -> dict:
+
+        filter: dict[str, Any] = {}
+        queued_filter: dict[str, Any] = {"statuses": ["QUEUED"]}
+        in_progress_filter: dict[str, Any] = {
+            "statuses": ["STARTED", "STARTING", "CANCELING"]
+        }
+
+        if pipeline_name:
+            filter["pipelineName"] = pipeline_name
+            queued_filter["pipelineName"] = pipeline_name
+            in_progress_filter["pipelineName"] = pipeline_name
+        if run_ids:
+            filter["runIds"] = run_ids
+            queued_filter["runIds"] = run_ids
+            in_progress_filter["runIds"] = run_ids
+        if statuses:
+            filter["statuses"] = statuses
+
+        variables = {
+            "filter": filter,
+            "queuedFilter": queued_filter,
+            "inProgressFilter": in_progress_filter,
+            "limit": limit,
+        }
+        return self._execute(queries.RunsRootQuery, variables)
+
+    def asset_wipe(self, asset_keys: List[str]) -> dict:
         variables = {
             "assetKeys": [
                 {
-                    "path": [
-                        assetKeys,
-                    ]
+                    "path": asset_keys,
                 }
             ]
         }
         return self._execute(queries.AssetWipeMutation, variables)
 
-    def AssetMaterializationsQuery(
-        self, assetKeys: List[str], limit: int = 200
-    ) -> dict:
-        variables = {"assetKey": {"path": assetKeys}, "limit": limit}
+    def asset_materializations(self, asset_keys: List[str], limit: int = 200) -> dict:
+        variables = {"assetKey": {"path": asset_keys}, "limit": limit}
         return self._execute(queries.AssetMaterializationsQuery, variables)
 
-    def PermissionsQuery(self) -> dict:
+    def permissions(self) -> dict:
         return self._execute(queries.PermissionsQuery)
 
-    def RootWorkspaceQuery(self) -> dict:
+    def root_workspace(self) -> dict:
         return self._execute(queries.RootWorkspaceQuery)
 
-    def JobMetadataQuery(
-        self, repositoryLocationName: str, repositoryName: str, pipelineName: str
-    ) -> dict:
-        variables = {
-            "pipelineName": pipelineName,
-            "repositoryName": repositoryName,
-            "repositoryLocationName": repositoryLocationName,
-        }
-        return self._execute(queries.JobMetadataQuery, variables)
-
-    def PipelineExplorerRootQuery(
+    def pipeline_explorer_root(
         self,
-        repositoryLocationName: str,
-        repositoryName: str,
-        pipelineName: str,
-        rootHandleID: str = "",
-        requestScopeHandleID: str = "",
+        repository_location_name: str,
+        repository_name: str,
+        pipeline_name: str,
+        root_handle_id: str = "",
+        request_scope_handle_id: str = "",
     ) -> dict:
         variables = {
             "snapshotPipelineSelector": {
-                "repositoryName": repositoryName,
-                "repositoryLocationName": repositoryLocationName,
-                "pipelineName": pipelineName,
+                "repositoryName": repository_name,
+                "repositoryLocationName": repository_location_name,
+                "pipelineName": pipeline_name,
             },
-            "rootHandleID": rootHandleID,
-            "requestScopeHandleID": requestScopeHandleID,
+            "rootHandleID": root_handle_id,
+            "requestScopeHandleID": request_scope_handle_id,
         }
         return self._execute(queries.PipelineExplorerRootQuery, variables)
 
-    def JobOverviewSidebarQuery(
-        self, repositoryLocationName: str, repositoryName: str, pipelineName: str
+    def launchpad_root(
+        self, repository_location_name: str, repository_name: str, pipeline_name: str
     ) -> dict:
         variables = {
-            "pipelineSelector": {
-                "repositoryName": repositoryName,
-                "repositoryLocationName": repositoryLocationName,
-                "pipelineName": pipelineName,
-            }
-        }
-        return self._execute(queries.JobOverviewSidebarQuery, variables)
-
-    def LaunchpadRootQuery(
-        self, repositoryLocationName: str, repositoryName: str, pipelineName: str
-    ) -> dict:
-        variables = {
-            "repositoryName": repositoryName,
-            "repositoryLocationName": repositoryLocationName,
-            "pipelineName": pipelineName,
+            "repositoryName": repository_name,
+            "repositoryLocationName": repository_location_name,
+            "pipelineName": pipeline_name,
         }
         return self._execute(queries.LaunchpadRootQuery, variables)
 
-    def PipelineExecutionConfigSchemaQuery(
+    def pipeline_execution_config_schema(
         self,
-        repositoryLocationName: str,
-        repositoryName: str,
-        pipelineName: str,
+        repository_location_name: str,
+        repository_name: str,
+        pipeline_name: str,
         mode: None,
     ) -> dict:
         variables = {
             "selector": {
-                "repositoryName": repositoryName,
-                "repositoryLocationName": repositoryLocationName,
-                "pipelineName": pipelineName,
+                "repositoryName": repository_name,
+                "repositoryLocationName": repository_location_name,
+                "pipelineName": pipeline_name,
             },
             "mode": mode,
         }
         return self._execute(queries.PipelineExecutionConfigSchemaQuery, variables)
 
-    def OpSelectorQuery(
-        self, repositoryLocationName: str, repositoryName: str, pipelineName: str
+    def op_selector(
+        self, repository_location_name: str, repository_name: str, pipeline_name: str
     ) -> dict:
         variables = {
-            "pipelineName": pipelineName,
-            "repositoryLocationName": repositoryLocationName,
-            "repositoryName": repositoryName,
+            "pipelineName": pipeline_name,
+            "repositoryLocationName": repository_location_name,
+            "repositoryName": repository_name,
         }
         return self._execute(queries.OpSelectorQuery, variables)
 
-    def LaunchPipelineExecution(
+    def launch_pipeline_execution(
         self,
-        repositoryLocationName: str,
-        repositoryName: str,
-        pipelineName: str,
+        repository_location_name: str,
+        repository_name: str,
+        pipeline_name: str,
         execution_rcd: dict,
         ops_rcd: dict,
         resources_rcd: dict,
@@ -172,9 +205,9 @@ class DagsterGraphQLClient:
                     "resources": resources_rcd,
                 },
                 "selector": {
-                    "repositoryName": repositoryName,
-                    "repositoryLocationName": repositoryLocationName,
-                    "pipelineName": pipelineName,
+                    "repositoryName": repository_name,
+                    "repositoryLocationName": repository_location_name,
+                    "pipelineName": pipeline_name,
                 },
                 "mode": mode,
                 "executionMetadata": {"tags": tags},
@@ -182,69 +215,34 @@ class DagsterGraphQLClient:
         }
         return self._execute(queries.LaunchPipelineExecution, variables)
 
-    def RunsRootQuery(
-        self,
-        pipelineName: Optional[str] = None,
-        runIds: List[str] = [],
-        statuses: List[str] = [],
-        limit=20,
-    ) -> dict:
-
-        filter: dict[str, Any] = {}
-        queuedFilter: dict[str, Any] = {"statuses": ["QUEUED"]}
-        inProgressFilter: dict[str, Any] = {"statuses": ["STARTED", "STARTING", "CANCELING"]}
-
-        if pipelineName:
-            filter["pipelineName"] = pipelineName
-            queuedFilter["pipelineName"] = pipelineName
-            inProgressFilter["pipelineName"] = pipelineName
-        if runIds:
-            filter["runIds"] = runIds
-            queuedFilter["runIds"] = runIds
-            inProgressFilter["runIds"] = runIds
-        if statuses:
-            filter["statuses"] = statuses
-
-        variables = {
-            "filter": filter,
-            "queuedFilter": queuedFilter,
-            "inProgressFilter": inProgressFilter,
-            "limit": limit,
-        }
-        return self._execute(queries.RunsRootQuery, variables)
-
-    def InstanceSchedulesQuery(self) -> dict:
+    def instance_schedules(self) -> dict:
         return self._execute(queries.InstanceSchedulesQuery)
 
-    def InstanceSensorsQuery(self) -> dict:
+    def instance_sensors(self) -> dict:
         return self._execute(queries.InstanceSensorsQuery)
 
-    def StopSensor(self, jobOriginId: str) -> dict:
-        variables = {"jobOriginId": jobOriginId}
+    def sensor_stop(self, job_origin_id: str) -> dict:
+        variables = {"jobOriginId": job_origin_id}
         return self._execute(queries.StopSensor, variables)
 
-    def StartSensor(
-        self, repositoryLocationName: str, repositoryName: str, sensorName: str
+    def sensor_start(
+        self, repository_location_name: str, repository_name: str, sensor_name: str
     ) -> dict:
         variables = {
             "sensorSelector": {
-                "repositoryName": repositoryName,
-                "repositoryLocationName": repositoryLocationName,
-                "sensorName": sensorName,
+                "repositoryName": repository_name,
+                "repositoryLocationName": repository_location_name,
+                "sensorName": sensor_name,
             }
         }
         return self._execute(queries.StartSensor, variables)
 
-    def InstanceHealthQuery(self) -> dict:
+    def instance_health(self) -> dict:
         return self._execute(queries.InstanceHealthQuery)
 
-    def InstanceConfigQuery(self) -> dict:
+    def instance_config(self) -> dict:
         return self._execute(queries.InstanceConfigQuery)
 
-    def ReloadRepositoryLocationMutation(self, repositoryLocationName: str) -> dict:
-        variables = {"location": repositoryLocationName}
+    def reload_repository_location(self, repository_location_name: str) -> dict:
+        variables = {"location": repository_location_name}
         return self._execute(queries.ReloadRepositoryLocationMutation, variables)
-
-    def Delete(self, runId: str) -> dict:
-        variables = {"runId": runId}
-        return self._execute(queries.Delete, variables)
