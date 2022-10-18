@@ -169,7 +169,7 @@ def runs_preset(ctx, pipeline_name, idx, run_config):
         print(f"Failure: {message}")
 
 
-#if __name__ == '__main__':
+# if __name__ == '__main__':
 #     cli(sys.argv[1:])
 #     cli(["instance", "health"])
 #     cli(["jobs", "list"])

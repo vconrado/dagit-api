@@ -190,14 +190,14 @@ class DagsterGraphQLClient:
         limit=20,
     ) -> dict:
 
-        filter = {}
-        queuedFilter = {"statuses": ["QUEUED"]}
-        inProgressFilter = {"statuses": ["STARTED", "STARTING", "CANCELING"]}
+        filter: dict[str, Any] = {}
+        queuedFilter: dict[str, Any] = {"statuses": ["QUEUED"]}
+        inProgressFilter: dict[str, Any] = {"statuses": ["STARTED", "STARTING", "CANCELING"]}
 
         if pipelineName:
             filter["pipelineName"] = pipelineName
-            queuedFilter["pipelineName"] = pipelineName  # type: ignore
-            inProgressFilter["pipelineName"] = pipelineName  # type: ignore
+            queuedFilter["pipelineName"] = pipelineName
+            inProgressFilter["pipelineName"] = pipelineName
         if runIds:
             filter["runIds"] = runIds
             queuedFilter["runIds"] = runIds

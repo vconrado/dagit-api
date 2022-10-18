@@ -21,7 +21,7 @@ with open(os.path.join('dagster_graphql_client', 'version.py'), 'rt') as fp:
 setup(
     name='dagster_graphql_client',
     version=version,
-    description=__doc__,  # type: ignore
+    description=__doc__,
     long_description=readme,
     keywords=[],
     license='MIT',
