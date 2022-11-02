@@ -4,7 +4,6 @@ from typing import List, Optional, Dict, Any
 import dagster_graphql_client.queries as queries
 
 
-# Reference: https://github.com/dagster-io/dagster/blob/master/python_modules/dagster-graphql/dagster_graphql/client/client.py
 class DagsterGraphQLClient:
     def __init__(self, url, verify_ssl: bool = False, retries: int = 3):
 
@@ -31,10 +30,14 @@ class DagsterGraphQLClient:
     def job_metadata(
         self, repository_location_name: str, repository_name: str, pipeline_name: str
     ) -> dict:
+
         variables = {
-            "pipelineName": pipeline_name,
-            "repositoryName": repository_name,
-            "repositoryLocationName": repository_location_name,
+            "params": {
+                "pipelineName": pipeline_name,
+                "repositoryName": repository_name,
+                "repositoryLocationName": repository_location_name,
+            },
+            "runsFilter": {"pipelineName": pipeline_name},
         }
         return self._execute(queries.JobMetadataQuery, variables)
 
@@ -77,6 +80,10 @@ class DagsterGraphQLClient:
         variables = {"runId": run_id}
         return self._execute(queries.Delete, variables)
 
+    def run_root_query(self, run_id: str) -> dict:
+        variables = {"runId": run_id}
+        return self._execute(queries.RunRootQuery, variables)
+
     def runs_root(
         self,
         pipeline_name: Optional[str] = None,
@@ -110,11 +117,11 @@ class DagsterGraphQLClient:
         }
         return self._execute(queries.RunsRootQuery, variables)
 
-    def asset_wipe(self, asset_keys: List[str]) -> dict:
+    def assets_wipe(self, paths: List[str]) -> dict:
         variables = {
             "assetKeys": [
                 {
-                    "path": asset_keys,
+                    "path": paths,
                 }
             ]
         }
@@ -123,6 +130,17 @@ class DagsterGraphQLClient:
     def asset_materializations(self, asset_keys: List[str], limit: int = 200) -> dict:
         variables = {"assetKey": {"path": asset_keys}, "limit": limit}
         return self._execute(queries.AssetMaterializationsQuery, variables)
+
+    def asset_catalog_table(self):
+        return self._execute(queries.AssetCatalogTableQuery)
+
+    def asset(self, path: str) -> dict:
+        variables = {"assetKey": {"path": [path]}}
+        return self._execute(queries.AssetQuery, variables)
+
+    def asset_events(self, path: str, limit: int = 100) -> dict:
+        variables = {"assetKey": {"path": [path]}, "limit": limit}
+        return self._execute(queries.AssetEventsQuery, variables)
 
     def permissions(self) -> dict:
         return self._execute(queries.PermissionsQuery)
@@ -221,9 +239,33 @@ class DagsterGraphQLClient:
     def instance_sensors(self) -> dict:
         return self._execute(queries.InstanceSensorsQuery)
 
-    def sensor_stop(self, job_origin_id: str) -> dict:
-        variables = {"jobOriginId": job_origin_id}
-        return self._execute(queries.StopSensor, variables)
+    def sensor(
+        self, repository_location_name: str, repository_name: str, sensor_name: str
+    ) -> dict:
+        variables = {
+            "sensorSelector": {
+                "repositoryName": repository_name,
+                "repositoryLocationName": repository_location_name,
+                "sensorName": sensor_name,
+            }
+        }
+        return self._execute(queries.SensorRootQuery, variables)
+
+    def sensor_stop(
+        self, repository_location_name: str, repository_name: str, sensor_name: str
+    ) -> dict:
+        sensor = self.sensor(
+            repository_location_name=repository_location_name,
+            repository_name=repository_name,
+            sensor_name=sensor_name,
+        )
+
+        job_id = sensor.get("sensorOrError", {}).get("jobOriginId", None)
+        if job_id:
+            variables = {"jobOriginId": job_id}
+            return self._execute(queries.StopSensor, variables)
+        else:
+            raise Exception(f"Sensor {sensor_name} not found.")
 
     def sensor_start(
         self, repository_location_name: str, repository_name: str, sensor_name: str

@@ -133,6 +133,620 @@ AssetWipeMutation = """
     }
 """
 
+AssetCatalogTableQuery="""query AssetCatalogTableQuery {
+  assetsOrError {
+    __typename
+    ... on AssetConnection {
+      nodes {
+        id
+        ...AssetTableFragment
+        __typename
+      }
+      __typename
+    }
+    ...PythonErrorFragment
+  }
+}
+
+fragment PythonErrorFragment on PythonError {
+  __typename
+  message
+  stack
+  cause {
+    message
+    stack
+    __typename
+  }
+}
+
+fragment AssetTableFragment on Asset {
+  __typename
+  id
+  key {
+    path
+    __typename
+  }
+  definition {
+    id
+    opName
+    description
+    repository {
+      id
+      name
+      location {
+        id
+        name
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+}"""
+
+
+AssetQuery="""query AssetQuery($assetKey: AssetKeyInput!) {
+  assetOrError(assetKey: $assetKey) {
+    ... on Asset {
+      id
+      key {
+        path
+        __typename
+      }
+      assetMaterializations(limit: 1) {
+        timestamp
+        __typename
+      }
+      definition {
+        id
+        partitionDefinition
+        repository {
+          id
+          name
+          location {
+            id
+            name
+            __typename
+          }
+          __typename
+        }
+        ...AssetNodeDefinitionFragment
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+}
+
+fragment AssetNodeDefinitionFragment on AssetNode {
+  id
+  description
+  opName
+  jobNames
+  repository {
+    id
+    name
+    location {
+      id
+      name
+      __typename
+    }
+    __typename
+  }
+  ...AssetNodeFragment
+  ...AssetNodeLiveFragment
+  ...AssetNodeOpMetadataFragment
+  dependencies {
+    asset {
+      id
+      opName
+      jobNames
+      ...AssetNodeFragment
+      ...AssetNodeLiveFragment
+      __typename
+    }
+    __typename
+  }
+  dependedBy {
+    asset {
+      id
+      opName
+      jobNames
+      ...AssetNodeFragment
+      ...AssetNodeLiveFragment
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+
+fragment AssetNodeFragment on AssetNode {
+  id
+  opName
+  description
+  partitionDefinition
+  assetKey {
+    path
+    __typename
+  }
+  repository {
+    id
+    name
+    location {
+      id
+      name
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+
+fragment AssetNodeLiveFragment on AssetNode {
+  id
+  opName
+  assetKey {
+    path
+    __typename
+  }
+  assetMaterializations(limit: 1) {
+    ...LatestMaterializationMetadataFragment
+    metadataEntries {
+      ...MetadataEntryFragment
+      __typename
+    }
+    stepStats {
+      stepKey
+      startTime
+      endTime
+      __typename
+    }
+    runOrError {
+      ... on PipelineRun {
+        id
+        runId
+        status
+        pipelineName
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+
+fragment MetadataEntryFragment on EventMetadataEntry {
+  __typename
+  label
+  description
+  ... on EventPathMetadataEntry {
+    path
+    __typename
+  }
+  ... on EventJsonMetadataEntry {
+    jsonString
+    __typename
+  }
+  ... on EventUrlMetadataEntry {
+    url
+    __typename
+  }
+  ... on EventTextMetadataEntry {
+    text
+    __typename
+  }
+  ... on EventMarkdownMetadataEntry {
+    mdStr
+    __typename
+  }
+  ... on EventPythonArtifactMetadataEntry {
+    module
+    name
+    __typename
+  }
+  ... on EventFloatMetadataEntry {
+    floatValue
+    __typename
+  }
+  ... on EventIntMetadataEntry {
+    intValue
+    intRepr
+    __typename
+  }
+  ... on EventPipelineRunMetadataEntry {
+    runId
+    __typename
+  }
+  ... on EventAssetMetadataEntry {
+    assetKey {
+      path
+      __typename
+    }
+    __typename
+  }
+  ... on EventTableMetadataEntry {
+    table {
+      records
+      schema {
+        ...TableSchemaFragment
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  ... on EventTableSchemaMetadataEntry {
+    schema {
+      ...TableSchemaFragment
+      __typename
+    }
+    __typename
+  }
+}
+
+fragment TableSchemaFragment on TableSchema {
+  __typename
+  columns {
+    name
+    description
+    type
+    constraints {
+      nullable
+      unique
+      other
+      __typename
+    }
+    __typename
+  }
+  constraints {
+    other
+    __typename
+  }
+}
+
+fragment LatestMaterializationMetadataFragment on MaterializationEvent {
+  partition
+  runOrError {
+    ... on PipelineRun {
+      id
+      runId
+      mode
+      pipelineName
+      pipelineSnapshotId
+      repositoryOrigin {
+        id
+        repositoryName
+        repositoryLocationName
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  runId
+  timestamp
+  stepKey
+  metadataEntries {
+    ...MetadataEntryFragment
+    __typename
+  }
+  assetLineage {
+    assetKey {
+      path
+      __typename
+    }
+    partitions
+    __typename
+  }
+  __typename
+}
+
+fragment AssetNodeOpMetadataFragment on AssetNode {
+  id
+  op {
+    outputDefinitions {
+      metadataEntries {
+        ...MetadataEntryFragment
+        __typename
+      }
+      type {
+        ...DagsterTypeFragment
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+
+fragment DagsterTypeFragment on DagsterType {
+  ..._DagsterTypeFragment
+  innerTypes {
+    ..._DagsterTypeFragment
+    __typename
+  }
+  __typename
+}
+
+fragment _DagsterTypeFragment on DagsterType {
+  key
+  name
+  displayName
+  description
+  isNullable
+  isList
+  isBuiltin
+  isNothing
+  metadataEntries {
+    ...MetadataEntryFragment
+    __typename
+  }
+  inputSchemaType {
+    ...ConfigTypeSchemaFragment
+    recursiveConfigTypes {
+      ...ConfigTypeSchemaFragment
+      __typename
+    }
+    __typename
+  }
+  outputSchemaType {
+    ...ConfigTypeSchemaFragment
+    recursiveConfigTypes {
+      ...ConfigTypeSchemaFragment
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+
+fragment ConfigTypeSchemaFragment on ConfigType {
+  __typename
+  ... on EnumConfigType {
+    givenName
+    __typename
+  }
+  ... on RegularConfigType {
+    givenName
+    __typename
+  }
+  key
+  description
+  isSelector
+  typeParamKeys
+  ... on CompositeConfigType {
+    fields {
+      name
+      description
+      isRequired
+      configTypeKey
+      __typename
+    }
+    __typename
+  }
+  ... on ScalarUnionConfigType {
+    scalarTypeKey
+    nonScalarTypeKey
+    __typename
+  }
+  ... on MapConfigType {
+    keyLabelName
+    __typename
+  }
+}"""
+
+
+AssetEventsQuery="""query AssetEventsQuery($assetKey: AssetKeyInput!, $limit: Int, $before: String, $partitionInLast: Int) {
+  assetOrError(assetKey: $assetKey) {
+    ... on Asset {
+      id
+      key {
+        path
+        __typename
+      }
+      assetObservations(
+        limit: $limit
+        beforeTimestampMillis: $before
+        partitionInLast: $partitionInLast
+      ) {
+        ...AssetObservationFragment
+        __typename
+      }
+      assetMaterializations(
+        limit: $limit
+        beforeTimestampMillis: $before
+        partitionInLast: $partitionInLast
+      ) {
+        ...AssetMaterializationFragment
+        __typename
+      }
+      definition {
+        id
+        partitionKeys
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+}
+
+fragment AssetMaterializationFragment on MaterializationEvent {
+  partition
+  runOrError {
+    ... on PipelineRun {
+      id
+      runId
+      mode
+      repositoryOrigin {
+        id
+        repositoryName
+        repositoryLocationName
+        __typename
+      }
+      status
+      pipelineName
+      pipelineSnapshotId
+      __typename
+    }
+    __typename
+  }
+  runId
+  timestamp
+  stepKey
+  label
+  description
+  metadataEntries {
+    ...MetadataEntryFragment
+    __typename
+  }
+  assetLineage {
+    ...AssetLineageFragment
+    __typename
+  }
+  __typename
+}
+
+fragment AssetObservationFragment on ObservationEvent {
+  partition
+  runOrError {
+    ... on PipelineRun {
+      id
+      runId
+      mode
+      repositoryOrigin {
+        id
+        repositoryName
+        repositoryLocationName
+        __typename
+      }
+      status
+      pipelineName
+      pipelineSnapshotId
+      __typename
+    }
+    __typename
+  }
+  runId
+  timestamp
+  stepKey
+  stepStats {
+    endTime
+    startTime
+    __typename
+  }
+  label
+  description
+  metadataEntries {
+    ...MetadataEntryFragment
+    __typename
+  }
+  __typename
+}
+
+fragment MetadataEntryFragment on EventMetadataEntry {
+  __typename
+  label
+  description
+  ... on EventPathMetadataEntry {
+    path
+    __typename
+  }
+  ... on EventJsonMetadataEntry {
+    jsonString
+    __typename
+  }
+  ... on EventUrlMetadataEntry {
+    url
+    __typename
+  }
+  ... on EventTextMetadataEntry {
+    text
+    __typename
+  }
+  ... on EventMarkdownMetadataEntry {
+    mdStr
+    __typename
+  }
+  ... on EventPythonArtifactMetadataEntry {
+    module
+    name
+    __typename
+  }
+  ... on EventFloatMetadataEntry {
+    floatValue
+    __typename
+  }
+  ... on EventIntMetadataEntry {
+    intValue
+    intRepr
+    __typename
+  }
+  ... on EventPipelineRunMetadataEntry {
+    runId
+    __typename
+  }
+  ... on EventAssetMetadataEntry {
+    assetKey {
+      path
+      __typename
+    }
+    __typename
+  }
+  ... on EventTableMetadataEntry {
+    table {
+      records
+      schema {
+        ...TableSchemaFragment
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  ... on EventTableSchemaMetadataEntry {
+    schema {
+      ...TableSchemaFragment
+      __typename
+    }
+    __typename
+  }
+}
+
+fragment TableSchemaFragment on TableSchema {
+  __typename
+  columns {
+    name
+    description
+    type
+    constraints {
+      nullable
+      unique
+      other
+      __typename
+    }
+    __typename
+  }
+  constraints {
+    other
+    __typename
+  }
+}
+
+fragment AssetLineageFragment on AssetLineageInfo {
+  assetKey {
+    path
+    __typename
+  }
+  partitions
+  __typename
+}"""
+
+
 AssetMaterializationsQuery = """
     query AssetMaterializationsQuery(
         $assetKey: AssetKeyInput!, 
@@ -1378,6 +1992,100 @@ fragment CountFragment on Runs {
 }"""
 
 
+RunRootQuery="""query RunRootQuery($runId: ID!) {
+  pipelineRunOrError(runId: $runId) {
+    __typename
+    ... on Run {
+      id
+      ...RunFragment
+      __typename
+    }
+  }
+}
+
+fragment RunFragment on Run {
+  id
+  runConfig
+  runId
+  canTerminate
+  status
+  mode
+  tags {
+    key
+    value
+    __typename
+  }
+  rootRunId
+  parentRunId
+  pipelineName
+  solidSelection
+  pipelineSnapshotId
+  executionPlan {
+    artifactsPersisted
+    ...ExecutionPlanToGraphFragment
+    __typename
+  }
+  stepKeysToExecute
+  ...RunFragmentForRepositoryMatch
+  ...RunDetailsFragment
+  stepStats {
+    stepKey
+    status
+    startTime
+    endTime
+    attempts {
+      startTime
+      endTime
+      __typename
+    }
+    markers {
+      startTime
+      endTime
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+
+fragment ExecutionPlanToGraphFragment on ExecutionPlan {
+  steps {
+    key
+    kind
+    inputs {
+      dependsOn {
+        key
+        kind
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+
+fragment RunFragmentForRepositoryMatch on Run {
+  id
+  pipelineName
+  pipelineSnapshotId
+  repositoryOrigin {
+    id
+    repositoryName
+    repositoryLocationName
+    __typename
+  }
+  __typename
+}
+
+fragment RunDetailsFragment on Run {
+  id
+  startTime
+  endTime
+  status
+  __typename
+}"""
+
 InstanceSchedulesQuery = """
 query InstanceSchedulesQuery {
   instance {
@@ -1747,9 +2455,163 @@ fragment TickTagFragment on InstigationTick {
   __typename
 }"""
 
+SensorRootQuery="""query SensorRootQuery($sensorSelector: SensorSelector!) {
+  sensorOrError(sensorSelector: $sensorSelector) {
+    __typename
+    ... on Sensor {
+      id
+      ...SensorFragment
+      __typename
+    }
+  }
+  instance {
+    ...InstanceHealthFragment
+    daemonHealth {
+      id
+      daemonStatus(daemonType: "SENSOR") {
+        id
+        healthy
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+}
 
-StopSensor = """
-mutation StopSensor($jobOriginId: String!) {
+fragment SensorFragment on Sensor {
+  id
+  jobOriginId
+  name
+  description
+  minIntervalSeconds
+  nextTick {
+    timestamp
+    __typename
+  }
+  sensorState {
+    id
+    ...InstigationStateFragment
+    __typename
+  }
+  targets {
+    pipelineName
+    solidSelection
+    mode
+    __typename
+  }
+  metadata {
+    assetKeys {
+      path
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+
+fragment InstigationStateFragment on InstigationState {
+  id
+  name
+  instigationType
+  status
+  repositoryOrigin {
+    id
+    ...RepositoryOriginFragment
+    __typename
+  }
+  typeSpecificData {
+    ... on SensorData {
+      lastRunKey
+      __typename
+    }
+    ... on ScheduleData {
+      cronSchedule
+      __typename
+    }
+    __typename
+  }
+  runs(limit: 1) {
+    id
+    runId
+    status
+    __typename
+  }
+  status
+  ticks(limit: 1) {
+    id
+    ...TickTagFragment
+    __typename
+  }
+  runningCount
+  __typename
+}
+
+fragment RepositoryOriginFragment on RepositoryOrigin {
+  id
+  repositoryLocationName
+  repositoryName
+  repositoryLocationMetadata {
+    key
+    value
+    __typename
+  }
+  __typename
+}
+
+fragment PythonErrorFragment on PythonError {
+  __typename
+  message
+  stack
+  cause {
+    message
+    stack
+    __typename
+  }
+}
+
+fragment TickTagFragment on InstigationTick {
+  id
+  status
+  timestamp
+  skipReason
+  runIds
+  error {
+    ...PythonErrorFragment
+    __typename
+  }
+  __typename
+}
+
+fragment InstanceHealthFragment on Instance {
+  daemonHealth {
+    id
+    ...DaemonHealthFragment
+    __typename
+  }
+  hasInfo
+  __typename
+}
+
+fragment DaemonHealthFragment on DaemonHealth {
+  id
+  allDaemonStatuses {
+    id
+    daemonType
+    required
+    healthy
+    lastHeartbeatErrors {
+      __typename
+      ...PythonErrorFragment
+    }
+    lastHeartbeatTime
+    __typename
+  }
+  __typename
+}"""
+
+
+StopSensor = """mutation StopSensor($jobOriginId: String!) {
   stopSensor(jobOriginId: $jobOriginId) {
     __typename
     ... on StopSensorMutationResult {
